@@ -3,6 +3,7 @@ name = "sentineldq"
 version = "0.1.0"
 description = "Metadata-driven data observability platform"
 requires-python = ">=3.10"
+dependencies = ["duckdb>=0.10"]
 
 [build-system]
 requires = ["setuptools"]

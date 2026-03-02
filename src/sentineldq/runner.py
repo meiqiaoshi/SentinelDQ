@@ -10,7 +10,12 @@ def run_once(config_path: str):
 
     con = duckdb.connect()
 
-    con.execute("CREATE TABLE test_table AS SELECT * FROM range(100)")
+    # Demo: ensure tables exist so profiling succeeds (in-memory DuckDB)
+    con.execute("CREATE SCHEMA IF NOT EXISTS public")
+    for dataset in cfg.datasets:
+        con.execute(
+            f"CREATE OR REPLACE TABLE {dataset.name} AS SELECT * FROM range(100)"
+        )
 
     results = []
 
