@@ -1,0 +1,6 @@
+{
+  "datasets": [
+    {"name": "public.orders"},
+    {"name": "public.users"}
+  ]
+}
