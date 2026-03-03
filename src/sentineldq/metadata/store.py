@@ -31,6 +31,7 @@ def init_db():
             table_name TEXT,
             row_count INTEGER,
             schema_hash TEXT,
+            max_freshness_ts TEXT,
             created_at TEXT
         )
         """)
@@ -63,12 +64,17 @@ def save_run(run):
 def save_profile(run_id: str, profile: dict):
     with get_connection() as conn:
         conn.execute(
-            "INSERT INTO dataset_profiles (run_id, table_name, row_count, schema_hash, created_at) VALUES (?, ?, ?, ?, ?)",
+            """
+            INSERT INTO dataset_profiles
+            (run_id, table_name, row_count, schema_hash, max_freshness_ts, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
             (
                 run_id,
                 profile["table_name"],
                 int(profile["row_count"]),
                 profile["schema_hash"],
+                profile.get("max_freshness_ts"),
                 _utc_now_iso(),
             ),
         )
@@ -79,17 +85,12 @@ def get_recent_row_counts(
     limit: int = 7,
     exclude_run_id: Optional[str] = None,
 ) -> List[int]:
-    """
-    Return recent row_count history for a dataset, newest -> oldest.
-    Optionally exclude the current run_id so baseline doesn't include current run.
-    """
     sql = """
     SELECT row_count
     FROM dataset_profiles
     WHERE table_name = ?
     """
     params = [table_name]
-
     if exclude_run_id:
         sql += " AND run_id != ?"
         params.append(exclude_run_id)
@@ -99,7 +100,6 @@ def get_recent_row_counts(
 
     with get_connection() as conn:
         rows = conn.execute(sql, params).fetchall()
-
     return [int(r[0]) for r in rows]
 
 

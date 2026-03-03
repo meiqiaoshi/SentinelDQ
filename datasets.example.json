@@ -1,6 +1,20 @@
 {
   "datasets": [
-    {"name": "public.orders"},
-    {"name": "public.users"}
+    {
+      "name": "public.orders",
+      "freshness_column": "updated_at",
+      "checks": {
+        "freshness_minutes": 30,
+        "volume_change_pct": 0.30,
+        "volume_min_history": 3
+      }
+    },
+    {
+      "name": "public.users",
+      "freshness_column": "updated_at",
+      "checks": {
+        "freshness_minutes": 120
+      }
+    }
   ]
 }
