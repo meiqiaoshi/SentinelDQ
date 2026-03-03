@@ -1,9 +1,14 @@
 import sqlite3
 from pathlib import Path
-from datetime import datetime
-
+from datetime import datetime, timezone
+import uuid
+from typing import List, Optional
 
 DB_PATH = Path("sentineldq.db")
+
+
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def get_connection():
@@ -29,12 +34,23 @@ def init_db():
             created_at TEXT
         )
         """)
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS alerts (
+            alert_id TEXT PRIMARY KEY,
+            run_id TEXT,
+            table_name TEXT,
+            severity TEXT,
+            rule_name TEXT,
+            message TEXT,
+            created_at TEXT
+        )
+        """)
 
 
 def save_run(run):
     with get_connection() as conn:
         conn.execute(
-            "INSERT INTO runs VALUES (?, ?, ?, ?)",
+            "INSERT INTO runs (run_id, started_at, finished_at, status) VALUES (?, ?, ?, ?)",
             (
                 run.run_id,
                 run.started_at.isoformat(),
@@ -47,12 +63,68 @@ def save_run(run):
 def save_profile(run_id: str, profile: dict):
     with get_connection() as conn:
         conn.execute(
-            "INSERT INTO dataset_profiles VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO dataset_profiles (run_id, table_name, row_count, schema_hash, created_at) VALUES (?, ?, ?, ?, ?)",
             (
                 run_id,
                 profile["table_name"],
-                profile["row_count"],
+                int(profile["row_count"]),
                 profile["schema_hash"],
-                datetime.utcnow().isoformat(),
+                _utc_now_iso(),
             ),
         )
+
+
+def get_recent_row_counts(
+    table_name: str,
+    limit: int = 7,
+    exclude_run_id: Optional[str] = None,
+) -> List[int]:
+    """
+    Return recent row_count history for a dataset, newest -> oldest.
+    Optionally exclude the current run_id so baseline doesn't include current run.
+    """
+    sql = """
+    SELECT row_count
+    FROM dataset_profiles
+    WHERE table_name = ?
+    """
+    params = [table_name]
+
+    if exclude_run_id:
+        sql += " AND run_id != ?"
+        params.append(exclude_run_id)
+
+    sql += " ORDER BY created_at DESC LIMIT ?"
+    params.append(limit)
+
+    with get_connection() as conn:
+        rows = conn.execute(sql, params).fetchall()
+
+    return [int(r[0]) for r in rows]
+
+
+def save_alert(
+    run_id: str,
+    table_name: str,
+    severity: str,
+    rule_name: str,
+    message: str,
+) -> str:
+    alert_id = str(uuid.uuid4())
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO alerts (alert_id, run_id, table_name, severity, rule_name, message, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                alert_id,
+                run_id,
+                table_name,
+                severity,
+                rule_name,
+                message,
+                _utc_now_iso(),
+            ),
+        )
+    return alert_id
