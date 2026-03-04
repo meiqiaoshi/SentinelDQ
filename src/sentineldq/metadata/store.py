@@ -80,6 +80,25 @@ def save_profile(run_id: str, profile: dict):
         )
 
 
+def save_column_profile(run_id: str, table_name: str, column_profile: dict):
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO column_profiles
+            (run_id, table_name, column_name, null_rate, distinct_count, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run_id,
+                table_name,
+                column_profile["column_name"],
+                column_profile["null_rate"],
+                column_profile["distinct_count"],
+                _utc_now_iso(),
+            ),
+        )
+
+
 def get_recent_row_counts(
     table_name: str,
     limit: int = 7,

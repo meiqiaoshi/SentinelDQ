@@ -3,6 +3,8 @@ import duckdb
 from .models import Run
 from .config import load_config
 from .profiler.dataset_profiler import profile_dataset
+from .profiler.column_profiler import profile_columns
+from .metadata.store import save_column_profile
 from .metadata.store import (
     init_db,
     save_run,
@@ -49,6 +51,12 @@ def run_once(config_path: str):
             )
             results.append(profile)
             print(profile)
+
+            # Column profiling
+            column_profiles = profile_columns(con, dataset.name)
+
+            for cp in column_profiles:
+                save_column_profile(run.run_id, dataset.name, cp)
 
             # 2) volume baseline & detect (exclude current run)
             history = get_recent_row_counts(
