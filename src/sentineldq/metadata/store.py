@@ -122,6 +122,35 @@ def get_recent_row_counts(
     return [int(r[0]) for r in rows]
 
 
+def get_recent_null_rates(
+    table_name: str,
+    column_name: str,
+    limit: int = 7,
+    exclude_run_id: Optional[str] = None,
+) -> List[float]:
+    """
+    Return recent null_rate history for a column, newest -> oldest.
+    """
+    sql = """
+    SELECT null_rate
+    FROM column_profiles
+    WHERE table_name = ? AND column_name = ?
+    """
+    params = [table_name, column_name]
+
+    if exclude_run_id:
+        sql += " AND run_id != ?"
+        params.append(exclude_run_id)
+
+    sql += " ORDER BY created_at DESC LIMIT ?"
+    params.append(limit)
+
+    with get_connection() as conn:
+        rows = conn.execute(sql, params).fetchall()
+
+    return [float(r[0]) for r in rows]
+
+
 def save_alert(
     run_id: str,
     table_name: str,
