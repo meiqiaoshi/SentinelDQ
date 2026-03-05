@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from sentineldq.runner import run_once
-from sentineldq.metadata.store import get_recent_alerts
+from sentineldq.metadata.store import get_recent_alerts, get_latest_dataset_health
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -23,12 +23,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to dataset config (json for now)",
     )
 
+    # sentineldq alerts --limit N
     p_alerts = sub.add_parser("alerts", help="Show recent alerts")
     p_alerts.add_argument(
         "--limit",
         type=int,
         default=10,
         help="Number of alerts to show",
+    )
+
+    # sentineldq datasets --limit N
+    p_ds = sub.add_parser("datasets", help="Show latest dataset health summary")
+    p_ds.add_argument(
+        "--limit",
+        type=int,
+        default=50,
+        help="Number of datasets to show",
     )
 
     return parser
@@ -47,19 +57,31 @@ def main(argv: list[str] | None = None) -> int:
         print(f"started_at={run.started_at}")
         print(f"finished_at={run.finished_at}")
         return 0
-    if args.command == "alerts":
-        alerts = get_recent_alerts(args.limit)
 
-        if not alerts:
+    if args.command == "alerts":
+        rows = get_recent_alerts(args.limit)
+
+        if not rows:
             print("No alerts found.")
             return 0
 
-        print(f"{'TIME':<24} {'SEVERITY':<8} {'RULE':<16} {'TABLE'}")
+        print(f"{'TIME':<24} {'SEVERITY':<8} {'RULE':<18} {'TABLE'}")
+        for created_at, severity, rule_name, table_name, message in rows:
+            print(f"{created_at:<24} {severity:<8} {rule_name:<18} {table_name}")
+        return 0
 
-        for row in alerts:
-            created_at, severity, rule_name, table_name, message = row
-            print(f"{created_at:<24} {severity:<8} {rule_name:<16} {table_name}")
+    if args.command == "datasets":
+        rows = get_latest_dataset_health(args.limit)
 
+        if not rows:
+            print("No dataset profiles found.")
+            print("Tip: run `sentineldq run --config <path>` first.")
+            return 0
+
+        print(f"{'DATASET':<22} {'LAST_SEEN':<24} {'STATUS':<8} {'ROWS':<8} {'MAX_TS'}")
+        for table_name, created_at, status, row_count, max_ts, schema_hash in rows:
+            max_ts_display = max_ts if max_ts else "-"
+            print(f"{table_name:<22} {created_at:<24} {status:<8} {row_count:<8} {max_ts_display}")
         return 0
 
     parser.print_help()

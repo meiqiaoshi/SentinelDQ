@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Tuple, Any
 
 DB_PATH = Path("sentineldq.db")
 
@@ -32,6 +32,16 @@ def init_db():
             row_count INTEGER,
             schema_hash TEXT,
             max_freshness_ts TEXT,
+            created_at TEXT
+        )
+        """)
+        conn.execute("""
+        CREATE TABLE IF NOT EXISTS column_profiles (
+            run_id TEXT,
+            table_name TEXT,
+            column_name TEXT,
+            null_rate REAL,
+            distinct_count INTEGER,
             created_at TEXT
         )
         """)
@@ -92,8 +102,8 @@ def save_column_profile(run_id: str, table_name: str, column_profile: dict):
                 run_id,
                 table_name,
                 column_profile["column_name"],
-                column_profile["null_rate"],
-                column_profile["distinct_count"],
+                float(column_profile["null_rate"]),
+                int(column_profile["distinct_count"]),
                 _utc_now_iso(),
             ),
         )
@@ -109,7 +119,8 @@ def get_recent_row_counts(
     FROM dataset_profiles
     WHERE table_name = ?
     """
-    params = [table_name]
+    params: List[Any] = [table_name]
+
     if exclude_run_id:
         sql += " AND run_id != ?"
         params.append(exclude_run_id)
@@ -119,6 +130,7 @@ def get_recent_row_counts(
 
     with get_connection() as conn:
         rows = conn.execute(sql, params).fetchall()
+
     return [int(r[0]) for r in rows]
 
 
@@ -128,15 +140,12 @@ def get_recent_null_rates(
     limit: int = 7,
     exclude_run_id: Optional[str] = None,
 ) -> List[float]:
-    """
-    Return recent null_rate history for a column, newest -> oldest.
-    """
     sql = """
     SELECT null_rate
     FROM column_profiles
     WHERE table_name = ? AND column_name = ?
     """
-    params = [table_name, column_name]
+    params: List[Any] = [table_name, column_name]
 
     if exclude_run_id:
         sql += " AND run_id != ?"
@@ -189,5 +198,38 @@ def get_recent_alerts(limit: int = 10):
             """,
             (limit,),
         ).fetchall()
+    return rows
 
+
+def get_latest_dataset_health(limit: int = 50):
+    """
+    Return the latest observed state per dataset, joined with run status.
+
+    Columns:
+      table_name, created_at, status, row_count, max_freshness_ts, schema_hash
+    """
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                dp.table_name,
+                dp.created_at,
+                r.status,
+                dp.row_count,
+                dp.max_freshness_ts,
+                dp.schema_hash
+            FROM dataset_profiles dp
+            JOIN runs r ON r.run_id = dp.run_id
+            JOIN (
+                SELECT table_name, MAX(created_at) AS max_created_at
+                FROM dataset_profiles
+                GROUP BY table_name
+            ) latest
+              ON dp.table_name = latest.table_name
+             AND dp.created_at = latest.max_created_at
+            ORDER BY dp.created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
     return rows
