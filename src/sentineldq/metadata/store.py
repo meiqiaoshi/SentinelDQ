@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
 import uuid
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Any
 
 DB_PATH = Path("sentineldq.db")
 
@@ -233,3 +233,26 @@ def get_latest_dataset_health(limit: int = 50):
             (limit,),
         ).fetchall()
     return rows
+
+
+def get_alert_counts_by_table(hours: int = 24):
+    """
+    Returns dict:
+      table_name -> (alerts_count, high_count)
+    Time window is computed in SQLite using local 'now'.
+    """
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                table_name,
+                COUNT(*) AS alert_cnt,
+                SUM(CASE WHEN severity = 'high' THEN 1 ELSE 0 END) AS high_cnt
+            FROM alerts
+            WHERE created_at >= datetime('now', ?)
+            GROUP BY table_name
+            """,
+            (f"-{hours} hours",),
+        ).fetchall()
+
+    return {r[0]: (int(r[1]), int(r[2] or 0)) for r in rows}

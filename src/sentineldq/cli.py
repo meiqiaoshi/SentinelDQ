@@ -4,7 +4,11 @@ import argparse
 import sys
 
 from sentineldq.runner import run_once
-from sentineldq.metadata.store import get_recent_alerts, get_latest_dataset_health
+from sentineldq.metadata.store import (
+    get_recent_alerts,
+    get_latest_dataset_health,
+    get_alert_counts_by_table,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,6 +43,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=50,
         help="Number of datasets to show",
+    )
+    p_ds.add_argument(
+        "--hours",
+        type=int,
+        default=24,
+        help="Lookback window (hours) for alert counts",
     )
 
     return parser
@@ -78,10 +88,20 @@ def main(argv: list[str] | None = None) -> int:
             print("Tip: run `sentineldq run --config <path>` first.")
             return 0
 
-        print(f"{'DATASET':<22} {'LAST_SEEN':<24} {'STATUS':<8} {'ROWS':<8} {'MAX_TS'}")
+        counts = get_alert_counts_by_table(hours=args.hours)
+
+        print(
+            f"{'DATASET':<22} {'LAST_SEEN':<24} {'STATUS':<8} {'ROWS':<8} "
+            f"{'MAX_TS':<24} {'ALERTS':<8} {'HIGH'}"
+        )
+
         for table_name, created_at, status, row_count, max_ts, schema_hash in rows:
             max_ts_display = max_ts if max_ts else "-"
-            print(f"{table_name:<22} {created_at:<24} {status:<8} {row_count:<8} {max_ts_display}")
+            alert_cnt, high_cnt = counts.get(table_name, (0, 0))
+            print(
+                f"{table_name:<22} {created_at:<24} {status:<8} {row_count:<8} "
+                f"{max_ts_display:<24} {alert_cnt:<8} {high_cnt}"
+            )
         return 0
 
     parser.print_help()
