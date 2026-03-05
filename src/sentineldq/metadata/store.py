@@ -176,3 +176,18 @@ def save_alert(
             ),
         )
     return alert_id
+
+
+def get_recent_alerts(limit: int = 10):
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT created_at, severity, rule_name, table_name, message
+            FROM alerts
+            ORDER BY created_at DESC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+    return rows

@@ -4,6 +4,7 @@ import argparse
 import sys
 
 from sentineldq.runner import run_once
+from sentineldq.metadata.store import get_recent_alerts
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,6 +23,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to dataset config (json for now)",
     )
 
+    p_alerts = sub.add_parser("alerts", help="Show recent alerts")
+    p_alerts.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Number of alerts to show",
+    )
+
     return parser
 
 
@@ -37,6 +46,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"status={run.status}")
         print(f"started_at={run.started_at}")
         print(f"finished_at={run.finished_at}")
+        return 0
+    if args.command == "alerts":
+        alerts = get_recent_alerts(args.limit)
+
+        if not alerts:
+            print("No alerts found.")
+            return 0
+
+        print(f"{'TIME':<24} {'SEVERITY':<8} {'RULE':<16} {'TABLE'}")
+
+        for row in alerts:
+            created_at, severity, rule_name, table_name, message = row
+            print(f"{created_at:<24} {severity:<8} {rule_name:<16} {table_name}")
+
         return 0
 
     parser.print_help()
