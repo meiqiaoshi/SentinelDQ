@@ -13,7 +13,7 @@ producing or transforming data.
 
 User triggers execution:
 
-sentineldq run
+sentineldq run --config <path-to-datasets.json>
 
 Execution Flow:
 
@@ -28,40 +28,47 @@ evaluating dataset health at a specific point in time.
 
 ## 3. Core Modules
 
-### Config Layer
+### Config Layer (`config.py`)
 
-Responsible for: - Dataset configuration (datasets.yaml) - Threshold
-definitions - Data source configuration
+Responsible for: dataset configuration (JSON, e.g. `datasets.json`),
+threshold definitions in `checks`, and dataset specs (name,
+freshness_column, checks). Data source connection is currently in
+`runner`; dedicated source layer is planned.
 
-### Source Layer
+### Source Layer (in runner; future: dedicated `sources/`)
 
-Responsible for: - Database connectors (PostgreSQL, DuckDB) - File-based
-datasets - Future extensible source integrations
+Currently: DuckDB connection and demo table setup in `runner.py`.
+Planned: database connectors (PostgreSQL, DuckDB), file-based datasets,
+extensible source integrations.
 
-### Profiling Layer
+### Profiling Layer (`profiler/`)
 
-Responsible for: - Row count measurement - Null rate calculation -
-Statistical summaries - Schema fingerprint generation
+Responsible for: row count measurement, null rate and distinct count
+per column, schema fingerprint (hash), max freshness timestamp. Implemented
+in `dataset_profiler.py` and `column_profiler.py`.
 
-### Metadata Store
+### Metadata Store (`metadata/store.py`)
 
-Responsible for: - Run history persistence - Dataset profiling metrics -
-Alert records - Historical observability tracking
+Responsible for: run history, dataset and column profiling metrics,
+alert records (SQLite). Historical baselines are read from here by
+detectors.
 
-### Detection Engine
+### Detection Engine (`detect/`)
 
-Responsible for: - Freshness validation - Volume anomaly detection -
-Schema drift detection - Distribution deviation checks
+Implemented: freshness validation (`freshness.py`), volume anomaly
+(`volume.py`), null-rate spike (`null_spike.py`). Planned: schema
+drift detection, distribution deviation checks.
 
-### Alert Layer
+### Alert Layer (in metadata store + CLI)
 
-Responsible for: - Console alerts - Notification abstraction - Future
-Slack/email integrations
+Alerts are persisted in `metadata/store` and printed to console during
+`run`. CLI commands `alerts` and `datasets` expose them. Future:
+notification abstraction, Slack/email sinks.
 
 ### API Layer (Future)
 
-Responsible for: - Dataset health endpoints - Alert querying -
-Observability dashboards
+Planned: dataset health endpoints, alert querying, observability
+dashboards.
 
 ------------------------------------------------------------------------
 

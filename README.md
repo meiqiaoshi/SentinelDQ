@@ -118,14 +118,30 @@ orchestration systems such as Airflow, Prefect, or cron-based jobs.
 
 ## 📦 Project Structure
 
-sentineldq/
-
-├── sentineldq/ │ ├── config/ \# dataset configuration │ ├── sources/ \#
-data source connectors │ ├── profiler/ \# dataset & column profiling │
-├── detect/ \# anomaly detection rules │ ├── alerts/ \# alert sinks │
-├── metadata/ \# metrics persistence │ └── api/ \# observability API │
-├── scripts/ │ └── run_once.py \# execution entrypoint │ ├── docs/ │ └──
-execution_flow.md │ └── README.md
+```
+SentinelDQ/
+├── src/sentineldq/              # main package
+│   ├── config.py                # dataset configuration (JSON → DatasetSpec, AppConfig)
+│   ├── models.py                # run model (e.g. Run)
+│   ├── cli.py                   # CLI entry: run, alerts, datasets
+│   ├── runner.py                # single-run orchestration: profile → detect → persist
+│   ├── profiler/                # dataset & column profiling
+│   │   ├── dataset_profiler.py  # table-level: row_count, schema_hash, max_freshness_ts
+│   │   └── column_profiler.py   # column-level: null_rate, distinct_count
+│   ├── detect/                  # anomaly detection rules
+│   │   ├── volume.py            # row-count anomaly vs. history
+│   │   ├── freshness.py         # freshness threshold (max_ts)
+│   │   └── null_spike.py        # null-rate spike
+│   └── metadata/                # metrics persistence
+│       └── store.py             # SQLite: runs, dataset_profiles, column_profiles, alerts
+├── scripts/
+│   └── run_once.py              # optional execution script
+├── docs/
+│   └── system_blueprint.md      # system design and execution lifecycle
+├── datasets.example.json       # example dataset config
+├── pyproject.toml
+└── README.md
+```
 
 ------------------------------------------------------------------------
 
