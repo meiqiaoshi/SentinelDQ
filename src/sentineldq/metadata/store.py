@@ -1,10 +1,11 @@
+import os
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
 import uuid
 from typing import List, Optional, Any
 
-DB_PATH = Path("sentineldq.db")
+DB_PATH = Path(os.environ.get("SENTINELDQ_DB", "sentineldq.db"))
 
 
 def _utc_now_iso() -> str:
