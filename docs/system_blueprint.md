@@ -35,11 +35,12 @@ threshold definitions in `checks`, and dataset specs (name,
 freshness_column, checks). Data source connection is currently in
 `runner`; dedicated source layer is planned.
 
-### Source Layer (in runner; future: dedicated `sources/`)
+### Source Layer (`sources/`)
 
-Currently: DuckDB connection and demo table setup in `runner.py`.
-Planned: database connectors (PostgreSQL, DuckDB), file-based datasets,
-extensible source integrations.
+Currently: `get_connection(cfg)` and `prepare_demo_tables(conn, datasets)` in
+`sources/__init__.py`. Config can include optional `source` (type, path,
+create_demo_tables). Default is DuckDB in-memory with demo tables. Planned:
+PostgreSQL, file-based datasets, extensible source integrations.
 
 ### Profiling Layer (`profiler/`)
 

@@ -1,4 +1,9 @@
 {
+  "source": {
+    "type": "duckdb",
+    "path": ":memory:",
+    "create_demo_tables": true
+  },
   "datasets": [
     {
       "name": "public.orders",

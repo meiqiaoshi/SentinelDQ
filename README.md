@@ -134,6 +134,8 @@ SentinelDQ/
 │   │   └── null_spike.py        # null-rate spike
 │   └── metadata/                # metrics persistence
 │       └── store.py             # SQLite: runs, dataset_profiles, column_profiles, alerts
+│   └── sources/                 # data source connectors
+│       └── __init__.py          # get_connection, prepare_demo_tables (DuckDB)
 ├── scripts/
 │   └── run_once.py              # optional execution script
 ├── docs/
@@ -182,6 +184,10 @@ infrastructure.
 
 -   **Dataset config:** pass a JSON file to `sentineldq run --config <path>` (see
     `datasets.example.json`).
+-   **Data source:** optional `source` in the config JSON: `type` (e.g. `duckdb`),
+    `path` (e.g. `:memory:` or a file path), and `create_demo_tables` (if true,
+    tables are created in-DB for demo use). If you omit `source`, defaults are
+    DuckDB in-memory with demo tables.
 -   **Metadata DB:** observability data (runs, profiles, alerts) is stored in a
     SQLite file. Default path is `sentineldq.db` in the current working directory.
     Override with the environment variable `SENTINELDQ_DB` (e.g. for cron or CI:

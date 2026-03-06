@@ -1,7 +1,6 @@
-import duckdb
-
 from .models import Run
 from .config import load_config
+from .sources import get_connection, prepare_demo_tables
 from .profiler.dataset_profiler import profile_dataset
 from .profiler.column_profiler import profile_columns
 from .metadata.store import save_column_profile
@@ -24,21 +23,9 @@ def run_once(config_path: str):
     cfg = load_config(config_path)
     run = Run.start()
 
-    con = duckdb.connect()
-
-    # Demo: ensure tables exist so profiling succeeds (in-memory DuckDB)
-    con.execute("CREATE SCHEMA IF NOT EXISTS public")
-
-    # Create demo tables with an updated_at column so freshness checks work
-    # newest row has updated_at=now(), oldest is now()-99 minutes
-    for dataset in cfg.datasets:
-        con.execute(f"""
-            CREATE OR REPLACE TABLE {dataset.name} AS
-            SELECT
-                i AS id,
-                now() - (i * INTERVAL '1 minute') AS updated_at
-            FROM range(100) t(i)
-        """)
+    con = get_connection(cfg)
+    if cfg.source.create_demo_tables:
+        prepare_demo_tables(con, cfg.datasets)
 
     results = []
     any_failed = False
