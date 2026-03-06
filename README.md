@@ -195,6 +195,15 @@ infrastructure.
 
 ------------------------------------------------------------------------
 
+## 🧪 Development
+
+-   Install with dev dependencies: `pip install -e ".[dev]"` (adds pytest).
+-   Run tests: `pytest tests -v`. Tests use a temporary SQLite DB (via
+    `SENTINELDQ_DB` in `tests/conftest.py`).
+-   CI runs pytest on push/PR to `main` (see `.github/workflows/test.yml`).
+
+------------------------------------------------------------------------
+
 ## 🗺️ Roadmap
 
 ### Phase 1 --- Core Observability
