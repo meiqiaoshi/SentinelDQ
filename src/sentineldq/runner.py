@@ -1,3 +1,5 @@
+import logging
+
 from .models import Run
 from .config import load_config
 from .sources import get_connection, prepare_demo_tables
@@ -5,6 +7,8 @@ from .profiler.dataset_profiler import profile_dataset
 from .profiler.column_profiler import profile_columns
 from .metadata import store as metadata_store
 from .detect.registry import run_table_rules, run_column_rules
+
+logger = logging.getLogger(__name__)
 
 
 def run_once(config_path: str):
@@ -29,7 +33,7 @@ def run_once(config_path: str):
                 freshness_column=dataset.freshness_column,
             )
             results.append(profile)
-            print(profile)
+            logger.info("Profile: %s", profile)
 
             # Column profiling and column-level rules
             column_profiles = profile_columns(con, dataset.name)
@@ -50,11 +54,16 @@ def run_once(config_path: str):
                     rule_name=alert_payload["rule_name"],
                     message=alert_payload["message"],
                 )
-                print(f"ALERT[{alert_payload['severity']}]: {alert_payload['message']} (alert_id={alert_id})")
+                logger.info(
+                    "ALERT[%s]: %s (alert_id=%s)",
+                    alert_payload["severity"],
+                    alert_payload["message"],
+                    alert_id,
+                )
 
         except Exception as e:
             any_failed = True
-            print(f"Failed profiling {dataset.name}: {e}")
+            logger.exception("Failed profiling %s: %s", dataset.name, e)
 
     run.finalize(status="failed" if any_failed else "success")
     metadata_store.save_run(run)
