@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Callable, List
 from .volume import detect_volume_anomaly
 from .freshness import detect_freshness_anomaly
 from .null_spike import detect_null_spike
+from .schema_drift import detect_schema_drift
 
 if TYPE_CHECKING:
     from ..config import DatasetSpec
@@ -53,6 +54,26 @@ def _run_freshness(
     return [alert] if alert else []
 
 
+def _run_schema_drift(
+    dataset: "DatasetSpec",
+    profile: dict,
+    run_id: str,
+    store: Any,
+) -> List[dict]:
+    if "schema_drift" not in dataset.checks or not dataset.checks.get("schema_drift"):
+        return []
+    previous = store.get_previous_schema_hash(
+        table_name=dataset.name,
+        exclude_run_id=run_id,
+    )
+    alert = detect_schema_drift(
+        table_name=dataset.name,
+        current_schema_hash=profile["schema_hash"],
+        previous_schema_hash=previous,
+    )
+    return [alert] if alert else []
+
+
 def _run_null_spike(
     dataset: "DatasetSpec",
     column_profile: dict,
@@ -82,6 +103,7 @@ def _run_null_spike(
 TABLE_RULES: List[Callable[..., List[dict]]] = [
     _run_volume,
     _run_freshness,
+    _run_schema_drift,
 ]
 
 # Column-level: (dataset, column_profile, run_id, store) -> list of alert dicts

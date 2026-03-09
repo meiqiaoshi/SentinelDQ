@@ -80,9 +80,9 @@ Each SentinelDQ run performs:
 
 ### Schema Drift Detection
 
--   Column additions/removals
--   Data type changes
--   Structural fingerprint comparison
+-   Alerts when the table schema changes compared to the previous run (hash of
+    column names and types). Enable per dataset with `"schema_drift": true` in
+    `checks`.
 
 ### Data Quality Anomaly Detection
 
@@ -132,6 +132,7 @@ SentinelDQ/
 │   │   ├── registry.py          # table/column rule registry; config-driven
 │   │   ├── volume.py            # row-count anomaly vs. history
 │   │   ├── freshness.py         # freshness threshold (max_ts)
+│   │   ├── schema_drift.py      # schema hash change vs. previous run
 │   │   └── null_spike.py        # null-rate spike
 │   └── metadata/                # metrics persistence
 │       └── store.py             # SQLite: runs, dataset_profiles, column_profiles, alerts

@@ -11,7 +11,8 @@
       "checks": {
         "freshness_minutes": 30,
         "volume_change_pct": 0.30,
-        "volume_min_history": 3
+        "volume_min_history": 3,
+        "schema_drift": true
       }
     },
     {

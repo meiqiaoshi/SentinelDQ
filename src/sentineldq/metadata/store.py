@@ -110,6 +110,25 @@ def save_column_profile(run_id: str, table_name: str, column_profile: dict):
         )
 
 
+def get_previous_schema_hash(
+    table_name: str,
+    exclude_run_id: Optional[str] = None,
+) -> Optional[str]:
+    """Return the most recent schema_hash for this table from a previous run, or None."""
+    sql = """
+    SELECT schema_hash FROM dataset_profiles
+    WHERE table_name = ?
+    """
+    params: List[Any] = [table_name]
+    if exclude_run_id:
+        sql += " AND run_id != ?"
+        params.append(exclude_run_id)
+    sql += " ORDER BY created_at DESC LIMIT 1"
+    with get_connection() as conn:
+        row = conn.execute(sql, params).fetchone()
+    return row[0] if row else None
+
+
 def get_recent_row_counts(
     table_name: str,
     limit: int = 7,
