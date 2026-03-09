@@ -128,7 +128,8 @@ SentinelDQ/
 │   ├── profiler/                # dataset & column profiling
 │   │   ├── dataset_profiler.py  # table-level: row_count, schema_hash, max_freshness_ts
 │   │   └── column_profiler.py   # column-level: null_rate, distinct_count
-│   ├── detect/                  # anomaly detection rules
+│   ├── detect/                  # anomaly detection rules (pluggable via registry)
+│   │   ├── registry.py          # table/column rule registry; config-driven
 │   │   ├── volume.py            # row-count anomaly vs. history
 │   │   ├── freshness.py         # freshness threshold (max_ts)
 │   │   └── null_spike.py        # null-rate spike
