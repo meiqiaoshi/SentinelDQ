@@ -203,8 +203,9 @@ infrastructure.
     overwriting any data; see `datasets.production.example.json`.
 -   **Metadata DB:** observability data (runs, profiles, alerts) is stored in a
     SQLite file. Default path is `sentineldq.db` in the current working directory.
-    Override with the environment variable `SENTINELDQ_DB` (e.g. for cron or CI:
-    `export SENTINELDQ_DB=/var/lib/sentineldq/sentineldq.db`).
+    Override with the environment variable `SENTINELDQ_DB`, or set a top-level
+    `metadata_db_path` in the dataset config (used by `sentineldq run` so one config
+    can target different DBs per environment).
 
 ------------------------------------------------------------------------
 

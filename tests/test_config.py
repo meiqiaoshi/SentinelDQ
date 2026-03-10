@@ -63,6 +63,26 @@ def test_validate_config_source_not_object():
     assert "source" in str(exc_info.value).lower()
 
 
+def test_load_config_with_metadata_db_path():
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(
+            {"datasets": [{"name": "t"}], "metadata_db_path": "/var/lib/sentineldq/db.sqlite"},
+            f,
+        )
+        path = f.name
+    try:
+        cfg = load_config(path)
+        assert cfg.metadata_db_path == "/var/lib/sentineldq/db.sqlite"
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
+def test_validate_config_metadata_db_path_must_be_non_empty_string():
+    with pytest.raises(ConfigError) as exc_info:
+        _validate_config({"datasets": [], "metadata_db_path": ""})
+    assert "metadata_db_path" in str(exc_info.value).lower()
+
+
 def test_load_config_invalid_structure_raises_config_error():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump({"not_datasets": []}, f)

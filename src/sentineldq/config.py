@@ -43,6 +43,10 @@ def _validate_config(raw: dict) -> None:
         if "create_demo_tables" in src and not isinstance(src["create_demo_tables"], bool):
             raise ConfigError("source.create_demo_tables must be a boolean")
 
+    if "metadata_db_path" in raw and raw["metadata_db_path"] is not None:
+        if not isinstance(raw["metadata_db_path"], str) or not raw["metadata_db_path"].strip():
+            raise ConfigError("metadata_db_path must be a non-empty string or omitted")
+
 
 @dataclass
 class DatasetSpec:
@@ -64,6 +68,7 @@ class SourceSpec:
 class AppConfig:
     datasets: List[DatasetSpec]
     source: SourceSpec
+    metadata_db_path: Optional[str] = None
 
 
 def load_config(path: str) -> AppConfig:
@@ -81,4 +86,10 @@ def load_config(path: str) -> AppConfig:
     else:
         source = SourceSpec()  # default: duckdb :memory:, create_demo_tables=True
 
-    return AppConfig(datasets=datasets, source=source)
+    metadata_db_path = raw.get("metadata_db_path")
+    if isinstance(metadata_db_path, str) and metadata_db_path.strip():
+        metadata_db_path = metadata_db_path.strip()
+    else:
+        metadata_db_path = None
+
+    return AppConfig(datasets=datasets, source=source, metadata_db_path=metadata_db_path)

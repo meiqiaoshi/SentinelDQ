@@ -5,7 +5,10 @@ from datetime import datetime, timezone
 import uuid
 from typing import List, Optional, Any
 
-DB_PATH = Path(os.environ.get("SENTINELDQ_DB", "sentineldq.db"))
+
+def get_db_path() -> Path:
+    """Return the metadata DB path (env SENTINELDQ_DB or default). Read at runtime so config can override."""
+    return Path(os.environ.get("SENTINELDQ_DB", "sentineldq.db"))
 
 
 def _utc_now_iso() -> str:
@@ -13,7 +16,7 @@ def _utc_now_iso() -> str:
 
 
 def get_connection():
-    return sqlite3.connect(DB_PATH)
+    return sqlite3.connect(get_db_path())
 
 
 def init_db():

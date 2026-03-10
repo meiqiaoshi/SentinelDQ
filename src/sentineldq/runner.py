@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Optional
 
 from .models import Run
@@ -16,9 +17,11 @@ logger = logging.getLogger(__name__)
 def run_once(config_path: str, sink: Optional[AlertSink] = None):
     if sink is None:
         sink = ConsoleSink(metadata_store)
+    cfg = load_config(config_path)
+    if cfg.metadata_db_path:
+        os.environ["SENTINELDQ_DB"] = cfg.metadata_db_path
     metadata_store.init_db()
 
-    cfg = load_config(config_path)
     run = Run.start()
 
     con = get_connection(cfg)
