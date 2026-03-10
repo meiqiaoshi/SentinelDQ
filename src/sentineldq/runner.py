@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from .models import Run
 from .config import load_config
@@ -7,11 +8,14 @@ from .profiler.dataset_profiler import profile_dataset
 from .profiler.column_profiler import profile_columns
 from .metadata import store as metadata_store
 from .detect.registry import run_table_rules, run_column_rules
+from .alerts import AlertSink, ConsoleSink
 
 logger = logging.getLogger(__name__)
 
 
-def run_once(config_path: str):
+def run_once(config_path: str, sink: Optional[AlertSink] = None):
+    if sink is None:
+        sink = ConsoleSink(metadata_store)
     metadata_store.init_db()
 
     cfg = load_config(config_path)
@@ -47,19 +51,7 @@ def run_once(config_path: str):
             column_alerts = run_column_rules(dataset, column_profiles, run.run_id, metadata_store)
 
             for alert_payload in table_alerts + column_alerts:
-                alert_id = metadata_store.save_alert(
-                    run_id=run.run_id,
-                    table_name=dataset.name,
-                    severity=alert_payload["severity"],
-                    rule_name=alert_payload["rule_name"],
-                    message=alert_payload["message"],
-                )
-                logger.info(
-                    "ALERT[%s]: %s (alert_id=%s)",
-                    alert_payload["severity"],
-                    alert_payload["message"],
-                    alert_id,
-                )
+                sink.send(run.run_id, dataset.name, alert_payload)
 
         except Exception as e:
             any_failed = True

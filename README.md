@@ -98,6 +98,11 @@ Each SentinelDQ run performs:
 -   Run metadata tracking
 -   Alert history persistence
 
+### Alert Sinks
+
+-   Alerts are dispatched via an `AlertSink` (default: `ConsoleSink` persists to store and logs).
+-   Implement the `AlertSink` protocol to add Slack, email, or other notification channels.
+
 ------------------------------------------------------------------------
 
 ## ⚙️ Architecture Principles
@@ -136,6 +141,8 @@ SentinelDQ/
 │   │   └── null_spike.py        # null-rate spike
 │   └── metadata/                # metrics persistence
 │       └── store.py             # SQLite: runs, dataset_profiles, column_profiles, alerts
+│   ├── alerts/                  # alert sinks (console; extend for Slack, email)
+│   │   └── __init__.py          # AlertSink protocol, ConsoleSink
 │   └── sources/                 # data source connectors
 │       └── __init__.py          # get_connection, prepare_demo_tables (DuckDB)
 ├── scripts/

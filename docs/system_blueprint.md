@@ -57,14 +57,14 @@ detectors.
 ### Detection Engine (`detect/`)
 
 Implemented: freshness validation (`freshness.py`), volume anomaly
-(`volume.py`), null-rate spike (`null_spike.py`). Planned: schema
-drift detection, distribution deviation checks.
+(`volume.py`), null-rate spike (`null_spike.py`), schema drift
+(`schema_drift.py`). Planned: distribution deviation checks.
 
-### Alert Layer (in metadata store + CLI)
+### Alert Layer (`alerts/`)
 
-Alerts are persisted in `metadata/store` and printed to console during
-`run`. CLI commands `alerts` and `datasets` expose them. Future:
-notification abstraction, Slack/email sinks.
+Alerts are dispatched via an `AlertSink`; default `ConsoleSink` persists
+to `metadata/store` and logs. CLI commands `alerts` and `datasets` query
+the store. Implement `AlertSink` for Slack, email, etc.
 
 ### API Layer (Future)
 
