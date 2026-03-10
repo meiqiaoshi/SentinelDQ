@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from importlib.metadata import version as _pkg_version
 
 from sentineldq.runner import run_once
 from sentineldq.metadata.store import (
@@ -14,10 +15,23 @@ from sentineldq.metadata.store import (
 logger = logging.getLogger(__name__)
 
 
+def _get_version() -> str:
+    try:
+        return _pkg_version("sentineldq")
+    except Exception:
+        return "0.1.0"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sentineldq",
         description="SentinelDQ - data observability CLI",
+    )
+    parser.add_argument(
+        "--version",
+        "-V",
+        action="version",
+        version=f"%(prog)s {_get_version()}",
     )
 
     sub = parser.add_subparsers(dest="command", required=True)
@@ -28,6 +42,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--config",
         required=True,
         help="Path to dataset config (json for now)",
+    )
+    p_run.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Use DEBUG log level for this run",
+    )
+    p_run.add_argument(
+        "--quiet",
+        "-q",
+        action="store_true",
+        help="Use WARNING log level (only errors and warnings)",
     )
 
     # sentineldq alerts --limit N
@@ -64,6 +90,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "run":
+        if getattr(args, "verbose", False):
+            logging.getLogger().setLevel(logging.DEBUG)
+        elif getattr(args, "quiet", False):
+            logging.getLogger().setLevel(logging.WARNING)
         run = run_once(args.config)
         logger.info("SentinelDQ run completed")
         logger.info("run_id=%s", run.run_id)

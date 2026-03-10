@@ -217,6 +217,8 @@ infrastructure.
 -   CI runs pytest on push/PR to `main` (see `.github/workflows/test.yml`).
 -   Logging: runner and CLI use the standard `logging` module; adjust the
     logging level (e.g. `logging.basicConfig(level=logging.WARNING)`) to reduce output.
+-   CLI: `sentineldq --version` (or `-V`) prints the version; for `run`, use
+    `--verbose`/`-v` (DEBUG) or `--quiet`/`-q` (WARNING only).
 
 ------------------------------------------------------------------------
 
