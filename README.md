@@ -142,7 +142,8 @@ SentinelDQ/
 │   └── run_once.py              # optional execution script
 ├── docs/
 │   └── system_blueprint.md      # system design and execution lifecycle
-├── datasets.example.json       # example dataset config
+├── datasets.example.json           # example dataset config (demo mode)
+├── datasets.production.example.json # example for existing DuckDB tables
 ├── pyproject.toml
 └── README.md
 ```
@@ -189,7 +190,10 @@ infrastructure.
 -   **Data source:** optional `source` in the config JSON: `type` (e.g. `duckdb`),
     `path` (e.g. `:memory:` or a file path), and `create_demo_tables` (if true,
     tables are created in-DB for demo use). If you omit `source`, defaults are
-    DuckDB in-memory with demo tables.
+    DuckDB in-memory with demo tables. **Using existing tables:** point `path` at
+    your DuckDB file (e.g. `./warehouse.duckdb`) and set `create_demo_tables` to
+    `false` so SentinelDQ only profiles existing tables without creating or
+    overwriting any data; see `datasets.production.example.json`.
 -   **Metadata DB:** observability data (runs, profiles, alerts) is stored in a
     SQLite file. Default path is `sentineldq.db` in the current working directory.
     Override with the environment variable `SENTINELDQ_DB` (e.g. for cron or CI:
