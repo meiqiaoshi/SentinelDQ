@@ -303,9 +303,9 @@ Run SentinelDQ on a schedule so it keeps profiling and detecting anomalies.
 
 ### Phase 4 --- Production Readiness
 
--   Containerization
+-   Containerization ✓ (Dockerfile, run-in-production docs)
 -   Distributed execution
--   Multi-source monitoring
+-   Multi-source monitoring ✓ (DuckDB, PostgreSQL)
 
 ------------------------------------------------------------------------
 
