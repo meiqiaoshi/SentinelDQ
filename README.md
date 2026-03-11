@@ -14,6 +14,34 @@ of silent data failures before they impact downstream systems.
 
 ------------------------------------------------------------------------
 
+## ⚡ Quick Start
+
+1. **Install** (from the project root):
+
+   ```bash
+   pip install -e .
+   ```
+
+2. **Run one observability pass** with the example config (uses in-memory
+   DuckDB and creates demo tables):
+
+   ```bash
+   sentineldq run --config datasets.example.json
+   ```
+
+3. **Inspect results**:
+
+   ```bash
+   sentineldq datasets    # latest profile and alert counts per dataset
+   sentineldq alerts      # recent alerts
+   ```
+
+   Optionally use `--quiet` to reduce log output, or `sentineldq --version`
+   to check the version. For production, point `path` at your DuckDB file
+   and set `create_demo_tables: false` (see `datasets.production.example.json`).
+
+------------------------------------------------------------------------
+
 ## 🚀 Vision
 
 Modern organizations depend heavily on data pipelines, yet failures in
