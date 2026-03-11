@@ -180,6 +180,7 @@ SentinelDQ/
 │   └── system_blueprint.md      # system design and execution lifecycle
 ├── datasets.example.json           # example dataset config (demo mode)
 ├── datasets.production.example.json # example for existing DuckDB tables
+├── datasets.postgres.example.json   # example for PostgreSQL source
 ├── Dockerfile                       # optional: run SentinelDQ in containers
 ├── pyproject.toml
 └── README.md
@@ -224,13 +225,15 @@ infrastructure.
 
 -   **Dataset config:** pass a JSON file to `sentineldq run --config <path>` (see
     `datasets.example.json`).
--   **Data source:** optional `source` in the config JSON: `type` (e.g. `duckdb`),
-    `path` (e.g. `:memory:` or a file path), and `create_demo_tables` (if true,
-    tables are created in-DB for demo use). If you omit `source`, defaults are
-    DuckDB in-memory with demo tables. **Using existing tables:** point `path` at
-    your DuckDB file (e.g. `./warehouse.duckdb`) and set `create_demo_tables` to
-    `false` so SentinelDQ only profiles existing tables without creating or
-    overwriting any data; see `datasets.production.example.json`.
+-   **Data source:** optional `source` in the config JSON: `type` (e.g. `duckdb` or
+    `postgres`), `path` (DuckDB: `:memory:` or file path), `connection_uri` (PostgreSQL:
+    required when `type` is `postgres`), and `create_demo_tables` (DuckDB only). If you
+    omit `source`, defaults are DuckDB in-memory with demo tables. **PostgreSQL:** set
+    `type` to `postgres` and `connection_uri` to your connection string; install with
+    `pip install -e ".[postgres]"` (adds `psycopg2-binary`). See
+    `datasets.postgres.example.json`. **Using existing DuckDB tables:** point `path` at
+    your DuckDB file and set `create_demo_tables` to `false`; see
+    `datasets.production.example.json`.
 -   **Metadata DB:** observability data (runs, profiles, alerts) is stored in a
     SQLite file. Default path is `sentineldq.db` in the current working directory.
     Override with the environment variable `SENTINELDQ_DB`, or set a top-level

@@ -9,15 +9,26 @@ if TYPE_CHECKING:
 
 
 def get_connection(cfg: "AppConfig") -> Any:
-    """Return a database connection for the configured source. Currently only DuckDB is supported."""
-    if cfg.source.type != "duckdb":
-        raise ValueError(f"Unsupported source type: {cfg.source.type}. Use 'duckdb'.")
-    import duckdb
-    return duckdb.connect(cfg.source.path)
+    """Return a database connection for the configured source (DuckDB or PostgreSQL)."""
+    if cfg.source.type == "duckdb":
+        import duckdb
+        return duckdb.connect(cfg.source.path)
+    if cfg.source.type == "postgres":
+        try:
+            import psycopg2
+        except ImportError:
+            raise ImportError(
+                "PostgreSQL source requires psycopg2. Install with: pip install -e '.[postgres]'"
+            ) from None
+        uri = (cfg.source.connection_uri or "").strip()
+        if not uri:
+            raise ValueError("source.connection_uri is required when source.type is 'postgres'")
+        return psycopg2.connect(uri)
+    raise ValueError(f"Unsupported source type: {cfg.source.type}. Use 'duckdb' or 'postgres'.")
 
 
 def prepare_demo_tables(conn: Any, datasets: list["DatasetSpec"]) -> None:
-    """Create in-DB demo tables so profiling runs without an external warehouse. Idempotent."""
+    """Create in-DB demo tables so profiling runs without an external warehouse. Idempotent. DuckDB only."""
     conn.execute("CREATE SCHEMA IF NOT EXISTS public")
     for dataset in datasets:
         conn.execute(f"""

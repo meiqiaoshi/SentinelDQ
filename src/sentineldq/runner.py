@@ -25,7 +25,8 @@ def run_once(config_path: str, sink: Optional[AlertSink] = None):
     run = Run.start()
 
     con = get_connection(cfg)
-    if cfg.source.create_demo_tables:
+    dialect = cfg.source.type
+    if dialect == "duckdb" and cfg.source.create_demo_tables:
         prepare_demo_tables(con, cfg.datasets)
 
     results = []
@@ -38,12 +39,13 @@ def run_once(config_path: str, sink: Optional[AlertSink] = None):
                 con,
                 dataset.name,
                 freshness_column=dataset.freshness_column,
+                dialect=dialect,
             )
             results.append(profile)
             logger.info("Profile: %s", profile)
 
             # Column profiling and column-level rules
-            column_profiles = profile_columns(con, dataset.name)
+            column_profiles = profile_columns(con, dataset.name, dialect=dialect)
             for cp in column_profiles:
                 metadata_store.save_column_profile(run.run_id, dataset.name, cp)
 

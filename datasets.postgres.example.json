@@ -1,0 +1,19 @@
+{
+  "source": {
+    "type": "postgres",
+    "connection_uri": "postgresql://user:password@localhost:5432/mydb",
+    "create_demo_tables": false
+  },
+  "datasets": [
+    {
+      "name": "public.orders",
+      "freshness_column": "updated_at",
+      "checks": {
+        "freshness_minutes": 60,
+        "volume_change_pct": 0.30,
+        "volume_min_history": 3,
+        "schema_drift": true
+      }
+    }
+  ]
+}

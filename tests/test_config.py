@@ -83,6 +83,35 @@ def test_validate_config_metadata_db_path_must_be_non_empty_string():
     assert "metadata_db_path" in str(exc_info.value).lower()
 
 
+def test_validate_config_postgres_requires_connection_uri():
+    with pytest.raises(ConfigError) as exc_info:
+        _validate_config({"datasets": [], "source": {"type": "postgres"}})
+    assert "connection_uri" in str(exc_info.value).lower()
+
+
+def test_load_config_with_postgres_source():
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(
+            {
+                "datasets": [{"name": "public.t"}],
+                "source": {
+                    "type": "postgres",
+                    "connection_uri": "postgresql://localhost/db",
+                    "create_demo_tables": False,
+                },
+            },
+            f,
+        )
+        path = f.name
+    try:
+        cfg = load_config(path)
+        assert cfg.source.type == "postgres"
+        assert cfg.source.connection_uri == "postgresql://localhost/db"
+        assert cfg.source.create_demo_tables is False
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
 def test_load_config_invalid_structure_raises_config_error():
     with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump({"not_datasets": []}, f)

@@ -42,6 +42,12 @@ def _validate_config(raw: dict) -> None:
             raise ConfigError("source.path must be a string")
         if "create_demo_tables" in src and not isinstance(src["create_demo_tables"], bool):
             raise ConfigError("source.create_demo_tables must be a boolean")
+        if src.get("type") == "postgres":
+            if not src.get("connection_uri") or not isinstance(src["connection_uri"], str) or not str(src["connection_uri"]).strip():
+                raise ConfigError("source.connection_uri is required when source.type is 'postgres' and must be a non-empty string")
+        if "connection_uri" in src and src["connection_uri"] is not None:
+            if not isinstance(src["connection_uri"], str) or not src["connection_uri"].strip():
+                raise ConfigError("source.connection_uri must be a non-empty string or omitted")
 
     if "metadata_db_path" in raw and raw["metadata_db_path"] is not None:
         if not isinstance(raw["metadata_db_path"], str) or not raw["metadata_db_path"].strip():
@@ -62,6 +68,7 @@ class SourceSpec:
     type: str = "duckdb"
     path: str = ":memory:"
     create_demo_tables: bool = True
+    connection_uri: Optional[str] = None  # required when type == "postgres"
 
 
 @dataclass
@@ -82,7 +89,10 @@ def load_config(path: str) -> AppConfig:
 
     source = None
     if "source" in raw:
-        source = SourceSpec(**raw["source"])
+        src_raw = dict(raw["source"])
+        if "connection_uri" not in src_raw:
+            src_raw["connection_uri"] = None
+        source = SourceSpec(**src_raw)
     else:
         source = SourceSpec()  # default: duckdb :memory:, create_demo_tables=True
 
