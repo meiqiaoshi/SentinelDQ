@@ -129,7 +129,8 @@ Each SentinelDQ run performs:
 ### Alert Sinks
 
 -   Alerts are dispatched via an `AlertSink` (default: `ConsoleSink` persists to store and logs).
--   Implement the `AlertSink` protocol to add Slack, email, or other notification channels.
+-   `FileSink(store, file_path)` persists to store and appends one JSON line per alert to a file (e.g. for log aggregation).
+-   Implement the `AlertSink` protocol (`send(run_id, table_name, alert_payload) -> Optional[str]`) to add Slack, email, or other channels; pass your sink into `run_once(config_path, sink=...)`.
 
 ------------------------------------------------------------------------
 
@@ -169,8 +170,8 @@ SentinelDQ/
 │   │   └── null_spike.py        # null-rate spike
 │   └── metadata/                # metrics persistence
 │       └── store.py             # SQLite: runs, dataset_profiles, column_profiles, alerts
-│   ├── alerts/                  # alert sinks (console; extend for Slack, email)
-│   │   └── __init__.py          # AlertSink protocol, ConsoleSink
+│   ├── alerts/                  # alert sinks (console, file; extend for Slack, email)
+│   │   └── __init__.py          # AlertSink protocol, ConsoleSink, FileSink
 │   └── sources/                 # data source connectors
 │       └── __init__.py          # get_connection, prepare_demo_tables (DuckDB)
 ├── scripts/
