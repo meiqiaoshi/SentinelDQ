@@ -180,6 +180,7 @@ SentinelDQ/
 │   └── system_blueprint.md      # system design and execution lifecycle
 ├── datasets.example.json           # example dataset config (demo mode)
 ├── datasets.production.example.json # example for existing DuckDB tables
+├── Dockerfile                       # optional: run SentinelDQ in containers
 ├── pyproject.toml
 └── README.md
 ```
@@ -235,6 +236,31 @@ infrastructure.
     Override with the environment variable `SENTINELDQ_DB`, or set a top-level
     `metadata_db_path` in the dataset config (used by `sentineldq run` so one config
     can target different DBs per environment).
+
+------------------------------------------------------------------------
+
+## 🚀 Running in production
+
+Run SentinelDQ on a schedule so it keeps profiling and detecting anomalies.
+
+-   **Cron:** Run every hour (or your interval). Set `SENTINELDQ_DB` and use a
+    config that points at your real data (e.g. `datasets.production.example.json`):
+
+    ```bash
+    0 * * * * SENTINELDQ_DB=/var/lib/sentineldq/sentineldq.db /usr/local/bin/sentineldq run --config /etc/sentineldq/datasets.json --quiet
+    ```
+
+-   **Airflow / Prefect:** Add a task that runs the same command (e.g. `BashOperator` or
+    `subprocess.run(["sentineldq", "run", "--config", config_path, "--quiet"])`). Ensure
+    the worker has the config file and write access to the metadata DB path.
+
+-   **Docker:** From the repo root, build and run with a mounted config (and optional
+    volume for the metadata DB):
+
+    ```bash
+    docker build -t sentineldq .
+    docker run --rm -v /path/to/your/datasets.json:/config/datasets.json -e SENTINELDQ_DB=/data/sentineldq.db -v /path/to/data:/data sentineldq run --config /config/datasets.json --quiet
+    ```
 
 ------------------------------------------------------------------------
 
