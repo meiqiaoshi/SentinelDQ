@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
@@ -20,9 +21,11 @@ def get_connection(cfg: "AppConfig") -> Any:
             raise ImportError(
                 "PostgreSQL source requires psycopg2. Install with: pip install -e '.[postgres]'"
             ) from None
-        uri = (cfg.source.connection_uri or "").strip()
+        uri = (cfg.source.connection_uri or "").strip() or (os.environ.get("SENTINELDQ_PG_URI") or "").strip()
         if not uri:
-            raise ValueError("source.connection_uri is required when source.type is 'postgres'")
+            raise ValueError(
+                "PostgreSQL source requires connection_uri in config or the SENTINELDQ_PG_URI environment variable"
+            )
         return psycopg2.connect(uri)
     raise ValueError(f"Unsupported source type: {cfg.source.type}. Use 'duckdb' or 'postgres'.")
 

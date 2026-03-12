@@ -42,9 +42,6 @@ def _validate_config(raw: dict) -> None:
             raise ConfigError("source.path must be a string")
         if "create_demo_tables" in src and not isinstance(src["create_demo_tables"], bool):
             raise ConfigError("source.create_demo_tables must be a boolean")
-        if src.get("type") == "postgres":
-            if not src.get("connection_uri") or not isinstance(src["connection_uri"], str) or not str(src["connection_uri"]).strip():
-                raise ConfigError("source.connection_uri is required when source.type is 'postgres' and must be a non-empty string")
         if "connection_uri" in src and src["connection_uri"] is not None:
             if not isinstance(src["connection_uri"], str) or not src["connection_uri"].strip():
                 raise ConfigError("source.connection_uri must be a non-empty string or omitted")

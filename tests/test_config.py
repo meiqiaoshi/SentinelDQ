@@ -83,10 +83,9 @@ def test_validate_config_metadata_db_path_must_be_non_empty_string():
     assert "metadata_db_path" in str(exc_info.value).lower()
 
 
-def test_validate_config_postgres_requires_connection_uri():
-    with pytest.raises(ConfigError) as exc_info:
-        _validate_config({"datasets": [], "source": {"type": "postgres"}})
-    assert "connection_uri" in str(exc_info.value).lower()
+def test_validate_config_postgres_allows_omitting_connection_uri():
+    """When type is postgres, connection_uri may be omitted (use SENTINELDQ_PG_URI at runtime)."""
+    _validate_config({"datasets": [], "source": {"type": "postgres"}})
 
 
 def test_load_config_with_postgres_source():

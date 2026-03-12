@@ -227,11 +227,11 @@ infrastructure.
     `datasets.example.json`).
 -   **Data source:** optional `source` in the config JSON: `type` (e.g. `duckdb` or
     `postgres`), `path` (DuckDB: `:memory:` or file path), `connection_uri` (PostgreSQL:
-    required when `type` is `postgres`), and `create_demo_tables` (DuckDB only). If you
-    omit `source`, defaults are DuckDB in-memory with demo tables. **PostgreSQL:** set
-    `type` to `postgres` and `connection_uri` to your connection string; install with
-    `pip install -e ".[postgres]"` (adds `psycopg2-binary`). See
-    `datasets.postgres.example.json`. **Using existing DuckDB tables:** point `path` at
+    optional; if omitted, use env `SENTINELDQ_PG_URI`), and `create_demo_tables` (DuckDB
+    only). If you omit `source`, defaults are DuckDB in-memory with demo tables.
+    **PostgreSQL:** set `type` to `postgres` and either `connection_uri` in config or
+    `SENTINELDQ_PG_URI` in the environment; install with `pip install -e ".[postgres]"`.
+    See `datasets.postgres.example.json`. **Using existing DuckDB tables:** point `path` at
     your DuckDB file and set `create_demo_tables` to `false`; see
     `datasets.production.example.json`.
 -   **Metadata DB:** observability data (runs, profiles, alerts) is stored in a
