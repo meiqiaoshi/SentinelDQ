@@ -269,6 +269,7 @@ Run SentinelDQ on a schedule so it keeps profiling and detecting anomalies.
 
 ## 🧪 Development
 
+-   See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests, and how to submit changes.
 -   Install with dev dependencies: `pip install -e ".[dev]"` (adds pytest).
 -   Run tests: `pytest tests -v`. Tests use a temporary SQLite DB (via
     `SENTINELDQ_DB` in `tests/conftest.py`).
