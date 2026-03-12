@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import sys
 from importlib.metadata import version as _pkg_version
@@ -56,7 +57,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Use WARNING log level (only errors and warnings)",
     )
 
-    # sentineldq alerts --limit N
+    # sentineldq alerts --limit N [--json]
     p_alerts = sub.add_parser("alerts", help="Show recent alerts")
     p_alerts.add_argument(
         "--limit",
@@ -64,8 +65,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=10,
         help="Number of alerts to show",
     )
+    p_alerts.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON",
+    )
 
-    # sentineldq datasets --limit N
+    # sentineldq datasets --limit N [--json]
     p_ds = sub.add_parser("datasets", help="Show latest dataset health summary")
     p_ds.add_argument(
         "--limit",
@@ -78,6 +84,11 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         default=24,
         help="Lookback window (hours) for alert counts",
+    )
+    p_ds.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON",
     )
 
     return parser
@@ -105,6 +116,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "alerts":
         rows = get_recent_alerts(args.limit)
 
+        if getattr(args, "json", False):
+            out = [
+                {
+                    "created_at": created_at,
+                    "severity": severity,
+                    "rule_name": rule_name,
+                    "table_name": table_name,
+                    "message": message,
+                }
+                for created_at, severity, rule_name, table_name, message in rows
+            ]
+            print(json.dumps(out, indent=2))
+            return 0
+
         if not rows:
             logger.info("No alerts found.")
             return 0
@@ -116,13 +141,28 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "datasets":
         rows = get_latest_dataset_health(args.limit)
+        counts = get_alert_counts_by_table(hours=getattr(args, "hours", 24))
+
+        if getattr(args, "json", False):
+            out = []
+            for table_name, created_at, status, row_count, max_ts, schema_hash in rows:
+                alert_cnt, high_cnt = counts.get(table_name, (0, 0))
+                out.append({
+                    "dataset": table_name,
+                    "last_seen": created_at,
+                    "status": status,
+                    "rows": row_count,
+                    "max_ts": max_ts or None,
+                    "alerts": alert_cnt,
+                    "high": high_cnt,
+                })
+            print(json.dumps(out, indent=2))
+            return 0
 
         if not rows:
             logger.info("No dataset profiles found.")
             logger.info("Tip: run `sentineldq run --config <path>` first.")
             return 0
-
-        counts = get_alert_counts_by_table(hours=args.hours)
 
         logger.info(
             "%s",

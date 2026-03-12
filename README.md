@@ -277,7 +277,8 @@ Run SentinelDQ on a schedule so it keeps profiling and detecting anomalies.
 -   Logging: runner and CLI use the standard `logging` module; adjust the
     logging level (e.g. `logging.basicConfig(level=logging.WARNING)`) to reduce output.
 -   CLI: `sentineldq --version` (or `-V`) prints the version; for `run`, use
-    `--verbose`/`-v` (DEBUG) or `--quiet`/`-q` (WARNING only).
+    `--verbose`/`-v` (DEBUG) or `--quiet`/`-q` (WARNING only). Use `alerts --json` and
+    `datasets --json` for machine-readable output.
 
 ------------------------------------------------------------------------
 
