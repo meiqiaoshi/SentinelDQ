@@ -285,16 +285,16 @@ Run SentinelDQ on a schedule so it keeps profiling and detecting anomalies.
 
 ### Phase 1 --- Core Observability
 
--   Dataset profiling engine
--   Metrics persistence
--   Freshness monitoring
--   Schema drift detection
+-   Dataset profiling engine ✓
+-   Metrics persistence ✓
+-   Freshness monitoring ✓
+-   Schema drift detection ✓
 
 ### Phase 2 --- Detection Engine
 
--   Historical baselines
--   Statistical anomaly detection
--   Alert framework
+-   Historical baselines ✓ (store-backed history for volume, null-spike)
+-   Statistical anomaly detection ✓ (median-based volume, null-spike, freshness)
+-   Alert framework ✓ (AlertSink, ConsoleSink, FileSink, persistence, CLI)
 
 ### Phase 3 --- Platform Layer
 
