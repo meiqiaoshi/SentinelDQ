@@ -75,3 +75,34 @@ def test_cli_parser_accepts_json_for_alerts_and_datasets():
     assert args.json is True
     args = parser.parse_args(["datasets", "--json", "--limit", "2", "--hours", "48"])
     assert args.json is True
+
+
+def test_cli_run_dry_run_valid_config():
+    """run --dry-run with valid config exits 0 and does not run profiling."""
+    import tempfile
+    from pathlib import Path
+    config = {"datasets": [{"name": "public.t"}]}
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        import json
+        json.dump(config, f)
+        path = f.name
+    try:
+        code = main(["run", "--config", path, "--dry-run"])
+        assert code == 0
+    finally:
+        Path(path).unlink(missing_ok=True)
+
+
+def test_cli_run_dry_run_invalid_config_raises():
+    """run --dry-run with invalid config (e.g. missing datasets) raises ConfigError."""
+    import tempfile
+    from pathlib import Path
+    from sentineldq.config import ConfigError
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        f.write("{}")
+        path = f.name
+    try:
+        with pytest.raises(ConfigError):
+            main(["run", "--config", path, "--dry-run"])
+    finally:
+        Path(path).unlink(missing_ok=True)

@@ -6,6 +6,7 @@ import logging
 import sys
 from importlib.metadata import version as _pkg_version
 
+from sentineldq.config import load_config
 from sentineldq.runner import run_once
 from sentineldq.metadata.store import (
     get_recent_alerts,
@@ -56,6 +57,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use WARNING log level (only errors and warnings)",
     )
+    p_run.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Only load and validate config; do not connect or profile",
+    )
 
     # sentineldq alerts --limit N [--json]
     p_alerts = sub.add_parser("alerts", help="Show recent alerts")
@@ -105,6 +111,10 @@ def main(argv: list[str] | None = None) -> int:
             logging.getLogger().setLevel(logging.DEBUG)
         elif getattr(args, "quiet", False):
             logging.getLogger().setLevel(logging.WARNING)
+        if getattr(args, "dry_run", False):
+            load_config(args.config)
+            logger.info("Config valid.")
+            return 0
         run = run_once(args.config)
         logger.info("SentinelDQ run completed")
         logger.info("run_id=%s", run.run_id)
