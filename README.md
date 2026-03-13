@@ -16,6 +16,8 @@ of silent data failures before they impact downstream systems.
 
 ## ⚡ Quick Start
 
+Requires **Python 3.10+**.
+
 1. **Install** (from the project root):
 
    ```bash

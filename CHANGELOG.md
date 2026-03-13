@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+- `SlackSink` for Slack webhook notifications (persist + POST; stdlib only).
+- CLI: `--dry-run` for `run` (validate config only); `--json` for `alerts` and `datasets`.
+
+### Changed
+
+- Docs: Python 3.10+ requirement in README Quick Start; CHANGELOG release link and project structure (CHANGELOG.md, CONTRIBUTING.md) in README.
+
+------------------------------------------------------------------------
+
 ## [0.1.0] - Unreleased
 
 ### Added
@@ -19,4 +32,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Unit and e2e tests; GitHub Actions CI (pytest on Python 3.10–3.12).
 - CONTRIBUTING.md and README roadmap aligned with current features.
 
+[Unreleased]: https://github.com/meiqiaoshi/SentinelDQ/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/meiqiaoshi/SentinelDQ/releases/tag/v0.1.0
