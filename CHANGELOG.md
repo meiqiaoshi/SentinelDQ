@@ -19,4 +19,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Unit and e2e tests; GitHub Actions CI (pytest on Python 3.10–3.12).
 - CONTRIBUTING.md and README roadmap aligned with current features.
 
-[0.1.0]: https://github.com/your-org/SentinelDQ/releases/tag/v0.1.0
+[0.1.0]: https://github.com/meiqiaoshi/SentinelDQ/releases/tag/v0.1.0

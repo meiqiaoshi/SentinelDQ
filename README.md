@@ -182,6 +182,8 @@ SentinelDQ/
 ├── datasets.production.example.json # example for existing DuckDB tables
 ├── datasets.postgres.example.json   # example for PostgreSQL source
 ├── Dockerfile                       # optional: run SentinelDQ in containers
+├── CHANGELOG.md                     # version history
+├── CONTRIBUTING.md                  # how to contribute
 ├── pyproject.toml
 └── README.md
 ```
