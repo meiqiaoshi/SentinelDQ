@@ -3,7 +3,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from sentineldq.alerts import ConsoleSink, FileSink
+from sentineldq.alerts import ConsoleSink, FileSink, SlackSink
 
 
 def test_console_sink_send_persists_and_returns_alert_id():
@@ -50,3 +50,16 @@ def test_file_sink_persists_and_appends_to_file():
         assert record["rule_name"] == "freshness_stale"
     finally:
         Path(path).unlink(missing_ok=True)
+
+
+def test_slack_sink_persists_and_returns_alert_id():
+    """SlackSink persists to store and returns alert_id; webhook POST may fail without a real URL."""
+    class MockStore:
+        def save_alert(self, run_id, table_name, severity, rule_name, message):
+            return "alert-slack-789"
+
+    store = MockStore()
+    sink = SlackSink(store, "https://hooks.slack.com/services/fake/fake/fake")
+    alert_payload = {"severity": "high", "rule_name": "schema_drift", "message": "schema changed"}
+    alert_id = sink.send("run-3", "public.orders", alert_payload)
+    assert alert_id == "alert-slack-789"
