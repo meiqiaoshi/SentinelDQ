@@ -1,3 +1,7 @@
+"""
+CLI entry point: run (one observability pass), alerts (recent alerts), datasets
+(latest health summary). Parses args and delegates to runner / metadata store.
+"""
 from __future__ import annotations
 
 import argparse
@@ -25,6 +29,7 @@ def _get_version() -> str:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the sentineldq argument parser (run, alerts, datasets subcommands)."""
     parser = argparse.ArgumentParser(
         prog="sentineldq",
         description="SentinelDQ - data observability CLI",
@@ -101,6 +106,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Parse CLI, dispatch to run / alerts / datasets; return exit code."""
     argv = argv if argv is not None else sys.argv[1:]
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     parser = build_parser()

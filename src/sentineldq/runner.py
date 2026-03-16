@@ -1,3 +1,7 @@
+"""
+Single-run orchestration: load config, connect to source, profile each dataset,
+run detection rules, and dispatch alerts via the configured sink.
+"""
 import logging
 import os
 from typing import Optional
@@ -15,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 def run_once(config_path: str, sink: Optional[AlertSink] = None):
+    """
+    Run one observability pass: profile all configured datasets, run table/column
+    rules, persist metrics and send alerts. Returns the Run with status and timestamps.
+    """
     if sink is None:
         sink = ConsoleSink(metadata_store)
     cfg = load_config(config_path)

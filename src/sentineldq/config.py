@@ -76,6 +76,7 @@ class AppConfig:
 
 
 def load_config(path: str) -> AppConfig:
+    """Load and validate JSON config from path; return AppConfig (datasets, source, metadata_db_path)."""
     with open(path) as f:
         raw = json.load(f)
     _validate_config(raw)

@@ -73,7 +73,38 @@ dashboards.
 
 ------------------------------------------------------------------------
 
-## 4. Data Flow
+## 4. Execution call flow
+
+One full run (e.g. `sentineldq run --config path`) follows this call chain:
+
+```
+cli.main(argv)
+  → build_parser(); parse_args(argv)
+  → run_once(config_path, sink=None)
+       → load_config(config_path)           # config.py: AppConfig
+       → os.environ["SENTINELDQ_DB"] if cfg.metadata_db_path
+       → metadata_store.init_db()
+       → Run.start()
+       → get_connection(cfg)                  # sources: DuckDB or Postgres
+       → prepare_demo_tables(con, datasets)   # if dialect=duckdb and create_demo_tables
+       → for each dataset in cfg.datasets:
+            profile_dataset(con, name, freshness_column, dialect)   # profiler
+            profile_columns(con, name, dialect)
+            metadata_store.save_column_profile(run_id, name, cp)     # each column
+            metadata_store.save_profile(run_id, profile)
+            run_table_rules(dataset, profile, run_id, metadata_store)   # detect/
+            run_column_rules(dataset, column_profiles, run_id, metadata_store)
+            for each alert_payload in table_alerts + column_alerts:
+                sink.send(run_id, dataset.name, alert_payload)       # alerts (Console/File/Slack)
+       → run.finalize(status); metadata_store.save_run(run)
+  → return run (log run_id, status, timestamps)
+```
+
+Key entry points: `cli.main` → `runner.run_once` → `load_config`, `get_connection`, `profile_dataset` / `profile_columns`, `run_table_rules` / `run_column_rules`, `sink.send`.
+
+------------------------------------------------------------------------
+
+## 5. Data Flow
 
 Dataset ↓ Profiler ↓ Metrics Store ↓ Detector ↓ Alert
 
@@ -82,7 +113,7 @@ against historical baselines to detect anomalies.
 
 ------------------------------------------------------------------------
 
-## 5. Execution Boundary
+## 6. Execution Boundary
 
 SentinelDQ does NOT: - Modify datasets - Execute ETL jobs - Perform data
 transformations
@@ -92,7 +123,7 @@ health.
 
 ------------------------------------------------------------------------
 
-## 6. MVP Scope
+## 7. MVP Scope
 
 ### Included (Phase 1)
 
@@ -110,7 +141,7 @@ health.
 
 ------------------------------------------------------------------------
 
-## 7. Design Principles
+## 8. Design Principles
 
 -   Metadata-driven execution
 -   Separation from data production pipelines
@@ -121,7 +152,7 @@ health.
 
 ------------------------------------------------------------------------
 
-## 8. Future Expansion
+## 9. Future Expansion
 
 Potential future extensions include: - Data lineage tracking -
 Multi-environment monitoring - Real-time anomaly detection - Distributed
