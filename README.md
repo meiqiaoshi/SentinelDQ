@@ -1,5 +1,7 @@
 # SentinelDQ
 
+[![Tests](https://github.com/meiqiaoshi/SentinelDQ/actions/workflows/test.yml/badge.svg)](https://github.com/meiqiaoshi/SentinelDQ/actions/workflows/test.yml) [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
+
 SentinelDQ is a lightweight data observability platform designed to
 monitor data freshness, schema evolution, and data quality anomalies
 across modern data pipelines.
@@ -195,6 +197,8 @@ SentinelDQ/
 ├── pyproject.toml
 └── README.md
 ```
+
+Execution call flow and module roles: [docs/system_blueprint.md](docs/system_blueprint.md).
 
 ------------------------------------------------------------------------
 
