@@ -34,3 +34,8 @@ def test_baseline_zero_current_nonzero():
     assert alert is not None
     assert alert["severity"] == "high"
     assert "0" in alert["message"] and "10" in alert["message"]
+
+
+def test_baseline_zero_current_zero_no_alert():
+    """Edge case: current and baseline both zero -> no alert (no division-by-zero, no spurious alert)."""
+    assert detect_volume_anomaly("t", 0, [0, 0, 0], change_pct_threshold=0.30) is None

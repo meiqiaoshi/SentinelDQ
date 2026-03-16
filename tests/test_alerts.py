@@ -2,6 +2,7 @@
 import json
 import tempfile
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from sentineldq.alerts import ConsoleSink, FileSink, SlackSink
 
@@ -63,3 +64,31 @@ def test_slack_sink_persists_and_returns_alert_id():
     alert_payload = {"severity": "high", "rule_name": "schema_drift", "message": "schema changed"}
     alert_id = sink.send("run-3", "public.orders", alert_payload)
     assert alert_id == "alert-slack-789"
+
+
+def test_slack_sink_posts_to_webhook_when_mocked():
+    """SlackSink calls urlopen with POST to webhook URL and body containing alert text."""
+    class MockStore:
+        def save_alert(self, run_id, table_name, severity, rule_name, message):
+            return "alert-999"
+
+    store = MockStore()
+    webhook_url = "https://hooks.slack.com/services/T/B/X"
+    sink = SlackSink(store, webhook_url)
+    alert_payload = {"severity": "med", "rule_name": "volume_anomaly", "message": "volume drop 50%"}
+
+    with patch("sentineldq.alerts.urllib.request.urlopen", MagicMock()) as mock_urlopen:
+        alert_id = sink.send("run-4", "public.events", alert_payload)
+
+    assert alert_id == "alert-999"
+    assert mock_urlopen.call_count == 1
+    call_args = mock_urlopen.call_args
+    assert call_args[1].get("timeout") == 10
+    req = call_args[0][0]
+    assert req.get_full_url() == webhook_url
+    assert req.data is not None
+    body = json.loads(req.data.decode("utf-8"))
+    assert "text" in body
+    assert "SentinelDQ" in body["text"]
+    assert "volume_anomaly" in body["text"]
+    assert "volume drop 50%" in body["text"]

@@ -28,3 +28,11 @@ def test_alert_when_stale():
     assert alert["rule_name"] == "freshness_stale"
     assert alert["severity"] in ("med", "high")
     assert "stale" in alert["message"] or "120" in alert["message"]
+
+
+def test_empty_string_max_ts_treated_as_missing():
+    """Edge case: empty string for max timestamp is treated as missing -> freshness_missing alert."""
+    alert = detect_freshness_anomaly("t", "", threshold_minutes=60)
+    assert alert is not None
+    assert alert["rule_name"] == "freshness_missing"
+    assert alert["severity"] == "high"

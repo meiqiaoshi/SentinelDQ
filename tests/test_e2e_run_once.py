@@ -64,3 +64,22 @@ def test_run_once_produces_profile_and_persists_to_store(temp_config):
         row = cur.fetchone()
     assert row is not None
     assert row[1] == run.status
+
+
+def test_run_once_empty_datasets_completes_successfully():
+    """Edge case: config with empty datasets list still runs and finalizes with success."""
+    config = {
+        "source": {"type": "duckdb", "path": ":memory:", "create_demo_tables": False},
+        "datasets": [],
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(config, f)
+        path = f.name
+    try:
+        run = run_once(path)
+        assert run.run_id is not None
+        assert run.status == "success"
+        assert run.started_at is not None
+        assert run.finished_at is not None
+    finally:
+        Path(path).unlink(missing_ok=True)
