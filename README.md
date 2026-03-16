@@ -12,6 +12,11 @@ SentinelDQ aims to serve as an independent observability layer sitting
 alongside existing ETL and analytics workflows, enabling early detection
 of silent data failures before they impact downstream systems.
 
+### Project summary
+
+- **Goal:** Metadata-driven, periodic monitoring of dataset health (freshness, schema, volume, null-rate) with configurable detection rules and alert sinks; runs alongside existing pipelines (Cron, Airflow, Docker).
+- **Implemented:** DuckDB and PostgreSQL data sources; table- and column-level profiling; SQLite metadata store with historical baselines; detection rules (volume anomaly, freshness, null-spike, schema drift) via a config-driven registry; alert sinks (console, file, Slack); CLI (`run`, `alerts`, `datasets`) with `--dry-run` and `--json`; unit and e2e tests; CI (pytest on Python 3.10–3.12); Dockerfile and run-in-production docs. See [CHANGELOG](CHANGELOG.md) and Roadmap below for details.
+
 ------------------------------------------------------------------------
 
 ## ⚡ Quick Start
